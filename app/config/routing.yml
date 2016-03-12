@@ -1,7 +1,4 @@
 api:
-    resource: "@ApiBundle/Resources/config/routing.yml"
-    prefix:   /api/
-
-app:
-    resource: "@AppBundle/Controller/"
-    type:     annotation
+  resource: "@ApiBundle/Controller/"
+  type:     automatic
+  prefix:   /

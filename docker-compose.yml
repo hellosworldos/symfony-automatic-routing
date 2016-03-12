@@ -1,0 +1,7 @@
+symfonyroutingapp:
+  image: symfony
+  volumes:
+    - /var/www/symfonyrouting:/var/www/symfony_volume
+  environment:
+    IS_DEV: 1
+    VIRTUAL_HOST: symfonyrouting.dev

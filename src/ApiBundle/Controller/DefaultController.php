@@ -15,7 +15,7 @@ class DefaultController extends Controller
     public function redirectAction() {
         return new JsonResponse([
             'success' => true,
-            'action' => 'redirect'
+            'action'  => 'redirect'
         ]);
     }
 }

@@ -1,4 +1,15 @@
+parameters:
+  routing_automatic_loader.class: ApiBundle\Service\Routing\AutomaticDirectoryLoader
+  routing_automatic_loader_class.class: ApiBundle\Service\Routing\AutomaticClassLoader
+
 services:
-#    api.example:
-#        class: ApiBundle\Example
-#        arguments: ["@service_id", "plain_value", %parameter%]
+  routing_automatic_loader_class:
+    class: %routing_automatic_loader_class.class%
+    tags:
+      - {name: routing.loader}
+
+  routing_automatic_loader:
+    class: %routing_automatic_loader.class%
+    arguments: ["@routing_automatic_loader_class", "@file_locator"]
+    tags:
+      - {name: routing.loader}
