@@ -6,8 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class DefaultControllerTest extends WebTestCase
 {
-    public function testIndex()
-    {
+    public function testIndex() {
         $client  = static::createClient();
         $crawler = $client->request('GET', '/api/Default/index');
 
@@ -15,19 +14,15 @@ class DefaultControllerTest extends WebTestCase
         $this->assertContains('Hello World', $client->getResponse()->getContent());
     }
 
-    public function testIndexNoAction()
-    {
+    public function testIndexNoAction() {
         $client  = static::createClient();
         $crawler = $client->request('GET', '/api/Default');
-
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertContains('Hello World', $client->getResponse()->getContent());
     }
 
-    public function testIndexNoController()
-    {
-        $client = static::createClient();
-
+    public function testIndexNoController() {
+        $client  = static::createClient();
         $crawler = $client->request('GET', '/api');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
@@ -35,12 +30,10 @@ class DefaultControllerTest extends WebTestCase
     }
 
     public function testRedirect() {
-        $client = static::createClient();
-
+        $client  = static::createClient();
         $crawler = $client->request('GET', '/api/Default/redirect');
 
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertEquals(json_encode(['success' => true, 'action' => 'redirect']), $client->getResponse()->getContent());
-
     }
 }

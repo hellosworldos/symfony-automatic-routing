@@ -16,13 +16,12 @@ use ReflectionMethod;
 use Symfony\Component\Routing\Route;
 
 class AutomaticClassLoader extends SymfonyLoader {
-    const LOADER_NAME        = 'automatic_class';
-    const DEFAULT_ACTION     = 'indexAction';
-    const DEFAULT_CONTROLLER = 'DefaultController';
-
-    public function __construct() {
-
-    }
+    const LOADER_NAME            = 'automatic_class';
+    const DEFAULT_ACTION         = 'indexAction';
+    const DEFAULT_CONTROLLER     = 'DefaultController';
+    const CONTROLLER_FILE_SUFFIX = 'Controller';
+    const ACTION_METHOD_SUFFIX   = 'Action';
+    const BUNDLE_NAME_SUFFIX     = 'Bundle';
 
     public function load($class, $type = null) {
         $routes = new RouteCollection();
@@ -70,7 +69,7 @@ class AutomaticClassLoader extends SymfonyLoader {
      * @param string $condition
      * @return Route
      */
-    protected function createRoute($path, array $defaults, array $requirements, array $options, $host, array $schemes, array $methods, $condition) {
+    protected function createRoute($path, array $defaults, array $requirements = [], array $options = [], $host = '', array $schemes = [], array $methods = [], $condition = '') {
         return new Route($path, $defaults, $requirements, $options, $host, $schemes, $methods, $condition);
     }
 
@@ -84,9 +83,10 @@ class AutomaticClassLoader extends SymfonyLoader {
         $classParts        = explode('\\', $class->getName());
         $nameParts         = [];
         $isControllerParts = false;
+        $bundleNameShift   = -1 * strlen(static::BUNDLE_NAME_SUFFIX);
         foreach ($classParts as $i => $classPart) {
             if ($isControllerParts) {
-                if ('Controller' == substr($classPart, -10)) {
+                if (static::CONTROLLER_FILE_SUFFIX == substr($classPart, -1 * strlen(static::CONTROLLER_FILE_SUFFIX))) {
                     $nameParts[] = substr($classPart, 0, -10);
                 }
                 else {
@@ -94,15 +94,15 @@ class AutomaticClassLoader extends SymfonyLoader {
                 }
             }
 
-            if ('Controller' == $classPart && $i > 0 && 'Bundle' == substr($classParts[$i - 1], -6)) {
+            if (static::CONTROLLER_FILE_SUFFIX == $classPart && $i > 0 && static::BUNDLE_NAME_SUFFIX == substr($classParts[$i - 1], $bundleNameShift)) {
                 $isControllerParts = true;
-                $nameParts[]       = substr($classParts[$i - 1], 0, -6);
+                $nameParts[]       = substr($classParts[$i - 1], 0, $bundleNameShift);
             }
         }
 
-        $nameParts[]         = substr($method->getName(), 0, -6);
+        $nameParts[]         = substr($method->getName(), 0, -1 * strlen(static::ACTION_METHOD_SUFFIX));
         $controllerParts     = $nameParts;
-        $controllerParts[0] .= 'Bundle';
+        $controllerParts[0] .= static::BUNDLE_NAME_SUFFIX;
         $defaults    = [
             '_controller' => join(':', $controllerParts),
         ];
@@ -113,16 +113,9 @@ class AutomaticClassLoader extends SymfonyLoader {
             }
         }
 
-        $requirements = [];
-        $options      = [];
-        $schemes      = [];
-        $methods      = [];
-        $host         = '';
-        $condition    = '';
-        $path         = lcfirst(join('/', $nameParts));
-        $name         = join('_', $nameParts);
-
-        $route = $this->createRoute($path, $defaults, $requirements, $options, $host, $schemes, $methods, $condition);
+        $path  = lcfirst(join('/', $nameParts));
+        $name  = join('_', $nameParts);
+        $route = $this->createRoute($path, $defaults);
         $collection->add($name, $route);
 
         if (static::DEFAULT_ACTION == $method->getName()) {
@@ -131,13 +124,13 @@ class AutomaticClassLoader extends SymfonyLoader {
             array_pop($defaultActionParts);
             $defaultActionPath  = lcfirst(join('/', $defaultActionParts));
             $defaultActionName  = join('_', $defaultActionParts);
-            $defaultActionRoute = $this->createRoute($defaultActionPath, $defaults, $requirements, $options, $host, $schemes, $methods, $condition);
+            $defaultActionRoute = $this->createRoute($defaultActionPath, $defaults);
             $collection->add($defaultActionName, $defaultActionRoute);
 
             if (static::DEFAULT_CONTROLLER == $class->getShortName()) {
                 $defaultControllerPath  = '/'.lcfirst($defaultActionParts[0]);
                 $defaultControllerName  = $defaultActionParts[0];
-                $defaultControllerRoute = $this->createRoute($defaultControllerPath, $defaults, $requirements, $options, $host, $schemes, $methods, $condition);
+                $defaultControllerRoute = $this->createRoute($defaultControllerPath, $defaults);
                 $collection->add($defaultControllerName, $defaultControllerRoute);
             }
         }
