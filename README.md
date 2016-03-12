@@ -10,3 +10,7 @@ api:
   type:     automatic
   prefix:   /
 ```
+
+Clean cache before usage in browser
+
+
